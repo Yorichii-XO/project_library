@@ -13,13 +13,12 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::create('members', function (Blueprint $table) {
+        Schema::create('reservations', function (Blueprint $table) {
             $table->id();
-            $table->string('name');
-            $table->string('email')->unique();
-            $table->foreignId('user_id')->constrained()->onDelete('cascade');
-            $table->date('membership_date');
-            $table->enum('membership_status', ['active', 'inactive']);
+            $table->foreignId('book_id')->constrained()->onDelete('cascade');
+            $table->foreignId('member_id')->constrained()->onDelete('cascade');
+            $table->timestamp('reserved_date')->nullable();
+            $table->boolean('notification_sent')->default(false);
             $table->timestamps();
         });
     }
@@ -31,6 +30,6 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('members');
+        Schema::dropIfExists('reservations');
     }
 };

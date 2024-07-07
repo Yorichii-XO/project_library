@@ -7,78 +7,68 @@ use App\Models\Book;
 use Illuminate\Support\Facades\Validator;
 class BookController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        return Book::all();
+        $query = Book::query();
+
+        // Apply search filters if provided
+        if ($request->has('search')) {
+            $search = $request->search;
+            $query->where('title', 'like', "%$search%")
+                  ->orWhere('author', 'like', "%$search%")
+                  ->orWhere('genre', 'like', "%$search%");
+        }
+
+        // Paginate the results
+        $books = $query->paginate(10); // Adjust the pagination size as needed
+
+        return response()->json([
+            'success' => true,
+            'data' => $books
+        ]);
     }
 
     public function store(Request $request)
     {
-        $validator = Validator::make($request->all(), [
+        $request->validate([
             'title' => 'required|string|max:255',
             'author' => 'required|string|max:255',
             'genre' => 'required|string|max:255',
-            'publication_year' => 'required|integer',
+            'published_year' => 'required|integer',
             'isbn' => 'required|string|max:255|unique:books',
-            'available_copies' => 'required|integer',
+            'copies_available' => 'required|integer',
         ]);
 
-        if ($validator->fails()) {
-            return response()->json($validator->errors(), 400);
-        }
-
         $book = Book::create($request->all());
-
         return response()->json($book, 201);
     }
 
     public function show($id)
     {
-        $book = Book::find($id);
-
-        if (is_null($book)) {
-            return response()->json(['message' => 'Book not found'], 404);
-        }
-
+        $book = Book::findOrFail($id);
         return response()->json($book);
     }
 
     public function update(Request $request, $id)
     {
-        $book = Book::find($id);
-
-        if (is_null($book)) {
-            return response()->json(['message' => 'Book not found'], 404);
-        }
-
-        $validator = Validator::make($request->all(), [
+        $request->validate([
             'title' => 'string|max:255',
             'author' => 'string|max:255',
             'genre' => 'string|max:255',
-            'publication_year' => 'integer',
-            'isbn' => 'string|max:255|unique:books,isbn,' . $book->id,
-            'available_copies' => 'integer',
+            'published_year' => 'integer',
+            'isbn' => 'string|max:255|unique:books,isbn,'.$id,
+            'copies_available' => 'integer',
         ]);
 
-        if ($validator->fails()) {
-            return response()->json($validator->errors(), 400);
-        }
-
+        $book = Book::findOrFail($id);
         $book->update($request->all());
-
         return response()->json($book);
     }
 
     public function destroy($id)
     {
-        $book = Book::find($id);
-
-        if (is_null($book)) {
-            return response()->json(['message' => 'Book not found'], 404);
-        }
-
+        $book = Book::findOrFail($id);
         $book->delete();
-
-        return response()->json(['message' => 'Book deleted']);
+        return response()->json(null, 204);
     }
 }

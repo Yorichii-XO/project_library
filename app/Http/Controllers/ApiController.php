@@ -37,12 +37,12 @@ class ApiController extends Controller
         $user = Auth::user();
     
         // Create a new token for the user
-        $token = $user->createToken('auth_token')->plainTextToken;
+        // $token = $user->createToken('auth_token')->plainTextToken;
     
         // Return the token in the response
         return response()->json([
             'success' => true,
-            'token' => $token,
+            // 'token' => $token,
             'token_type' => 'Bearer',
             'status' => 200,
         ]);

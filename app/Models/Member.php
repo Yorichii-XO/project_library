@@ -11,7 +11,12 @@ class Member extends Model
     protected $fillable = [
         'name',
         'email',
+        'user_id',
         'membership_date',
-        'status'
+        'membership_status',
     ];
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
 }
